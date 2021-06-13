@@ -1,0 +1,2 @@
+rootProject.name = "Google Sheet Warehouse"
+include ':app'
