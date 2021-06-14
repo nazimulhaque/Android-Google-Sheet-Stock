@@ -4,7 +4,6 @@
     <string name="password">Password</string>
     <string name="sign_in">Sign In</string>
     <string name="ivTrescal_logo">Trescal Logo</string>
-    <string name="tvEss">Developed by eSpire Technology Ltd www.espire.tech</string>
     <string name="customer_collections">Customer Collections</string>
     <string name="verify_collection">Verify Collection</string>
     <string name="verify_delivery">Verify Delivery</string>
@@ -92,7 +91,7 @@
 
     <string name="location_updated">Location Updated: %1$s</string>
 
-    <string name="preference_file_key">com.espirestudios.trescal.location.PREFERENCE_FILE_KEY</string>
     <string name="no_location_text">No current location</string>
+    <string name="scanned_items">Scanned Items:</string>
 
 </resources>

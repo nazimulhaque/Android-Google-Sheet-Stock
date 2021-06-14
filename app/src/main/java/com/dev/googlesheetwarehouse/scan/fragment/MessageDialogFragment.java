@@ -1,4 +1,4 @@
-package com.dev.googlesheetwarehouse;
+package com.dev.googlesheetwarehouse.scan.fragment;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

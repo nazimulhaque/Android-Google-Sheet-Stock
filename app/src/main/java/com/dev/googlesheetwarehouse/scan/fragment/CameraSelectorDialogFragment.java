@@ -1,4 +1,4 @@
-package com.dev.googlesheetwarehouse;
+package com.dev.googlesheetwarehouse.scan.fragment;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -7,6 +7,8 @@ import android.hardware.Camera;
 import android.os.Bundle;
 
 import androidx.fragment.app.DialogFragment;
+
+import com.dev.googlesheetwarehouse.R;
 
 public class CameraSelectorDialogFragment extends DialogFragment {
     public interface CameraSelectorDialogListener {

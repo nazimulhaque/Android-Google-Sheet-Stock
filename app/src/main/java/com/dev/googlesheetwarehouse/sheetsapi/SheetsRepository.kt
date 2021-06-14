@@ -1,0 +1,56 @@
+package com.dev.googlesheetwarehouse.sheetsapi
+
+import com.dev.googlesheetwarehouse.model.PhoneStockInfo
+import com.dev.googlesheetwarehouse.model.SpreadsheetInfo
+import com.google.api.services.sheets.v4.model.*
+import io.reactivex.Observable
+import io.reactivex.Single
+
+class SheetsRepository(private val sheetsAPIDataSource: SheetsAPIDataSource) {
+
+    fun readSpreadSheet(
+        spreadsheetId: String,
+        spreadsheetRange: String
+    ): Single<List<PhoneStockInfo>> {
+        return sheetsAPIDataSource.readSpreadSheet(spreadsheetId, spreadsheetRange)
+    }
+
+    fun createSpreadsheet(spreadSheet: Spreadsheet): Observable<SpreadsheetInfo> {
+        return sheetsAPIDataSource.createSpreadsheet(spreadSheet)
+    }
+
+    fun updateSpreadsheet(
+        spreadSheetIdUpdate: String,
+        rangeUpdate: String,
+        valueRangeUpdate: ValueRange
+    ): UpdateValuesResponse {
+        return sheetsAPIDataSource.updateSpreadsheet(
+            spreadSheetIdUpdate,
+            rangeUpdate,
+            valueRangeUpdate
+        )
+    }
+
+    fun updateSpreadsheetObservable(
+        spreadsheetId: String,
+        spreadsheetRange: String,
+        requestBody: ValueRange
+    ): Observable<UpdateValuesResponse> {
+        return sheetsAPIDataSource.updateSpreadsheetObservable(
+            spreadsheetId,
+            spreadsheetRange,
+            requestBody
+        )
+    }
+
+    fun updateSpreadsheetRange(
+        spreadSheetIdUpdate: String,
+        batchUpdateRequest: BatchUpdateValuesRequest
+    ): Observable<BatchUpdateValuesResponse> {
+        return sheetsAPIDataSource.updateSpreadsheetRange(
+            spreadSheetIdUpdate,
+            batchUpdateRequest,
+        )
+    }
+
+}

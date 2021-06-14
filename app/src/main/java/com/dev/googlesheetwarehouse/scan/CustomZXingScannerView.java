@@ -1,4 +1,4 @@
-package com.dev.googlesheetwarehouse;
+package com.dev.googlesheetwarehouse.scan;
 
 import android.content.Context;
 import android.graphics.Rect;

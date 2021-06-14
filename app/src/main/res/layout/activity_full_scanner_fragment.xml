@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/scanner_fragment"
-        android:name="com.dev.googlesheetwarehouse.FullScannerFragment"
+        android:name="com.dev.googlesheetwarehouse.scan.fragment.FullScannerFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -21,7 +21,7 @@
         app:theme="@style/TransparentToolbar" />
 
     <TextView
-        android:id="@+id/tvScanCount"
+        android:id="@+id/tv_scan_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -31,7 +31,7 @@
         android:textColor="@android:color/white" />
 
     <Button
-        android:id="@+id/btnComplete"
+        android:id="@+id/btn_complete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
@@ -41,28 +41,5 @@
         android:paddingEnd="15dp"
         android:text="@string/complete_scan"
         android:textAllCaps="false" />
-
-    <ImageButton
-        android:id="@+id/imageButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="30dp"
-        android:layout_marginBottom="40dp"
-        android:background="@null"
-        android:contentDescription="@string/todo"
-        android:scaleType="fitXY"
-        android:src="@drawable/ic_camera_blue" />
-
-    <TextView
-        android:id="@+id/tvEss4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="15dp"
-        android:text="@string/tvEss"
-        android:textAlignment="center"
-        android:textColor="@android:color/white"
-        android:textSize="12sp" />
 
 </FrameLayout>

@@ -1,4 +1,4 @@
-package com.dev.googlesheetwarehouse;
+package com.dev.googlesheetwarehouse.scan.fragment;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -20,7 +20,9 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.espirestudios.trescal.ScanningActivity;
+import com.dev.googlesheetwarehouse.R;
+import com.dev.googlesheetwarehouse.ScanningActivity;
+import com.dev.googlesheetwarehouse.scan.CustomZXingScannerView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 
@@ -163,6 +165,10 @@ public class FullScannerFragment extends Fragment implements MessageDialogFragme
         // Bitmap bitmap = convertYuvByteArrayToBitmap(mScannerView.getImageData(), mScannerView.getCamera());
         // scanningActivity.onItemScanned(rawResult.getText(), bitmap);
         scanningActivity.onItemScanned(rawResult.getText());
+        mScannerView.stopCameraPreview();
+    }
+
+    public void resumeCameraPreview() {
         mScannerView.resumeCameraPreview(this);
     }
 
