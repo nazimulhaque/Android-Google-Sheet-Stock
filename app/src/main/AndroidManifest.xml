@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.VIBRATE" />
+
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
@@ -19,20 +20,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GoogleSheetWarehouse">
-        <activity android:name=".MainActivity">
-            <!--
-                        <intent-filter>
-                            <action android:name="android.intent.action.MAIN" />
-                            <category android:name="android.intent.category.LAUNCHER" />
-                        </intent-filter>
-            -->
-        </activity>
 
         <activity
             android:name=".ScanningActivity"
-            android:label="@string/scanner_fragment_activity"
-            android:launchMode="singleTop"
-            android:screenOrientation="fullSensor"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/AppOverlayTheme"
             android:uiOptions="splitActionBarWhenNarrow">
             <intent-filter>
@@ -43,6 +35,11 @@
                 android:name="android.support.UI_OPTIONS"
                 android:value="splitActionBarWhenNarrow" />
         </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
 
     </application>
 
