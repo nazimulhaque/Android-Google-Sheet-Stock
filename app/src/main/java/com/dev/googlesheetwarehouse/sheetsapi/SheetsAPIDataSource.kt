@@ -71,19 +71,6 @@ class SheetsAPIDataSource(
         spreadsheetId: String,
         spreadsheetRange: String,
         requestBody: ValueRange
-    ): UpdateValuesResponse {
-        val response = sheetsAPI.spreadsheets().values()
-            .update(spreadsheetId, spreadsheetRange, requestBody).execute()
-        Log.d("SPREADSHEET_LOG", "UPDATING SHEET")
-        Log.d("SPREADSHEET_LOG", "UPDATING SHEET RESPONSE: " + response.updatedCells)
-
-        return response
-    }
-
-    override fun updateSpreadsheetObservable(
-        spreadsheetId: String,
-        spreadsheetRange: String,
-        requestBody: ValueRange
     ): Observable<UpdateValuesResponse> {
         Log.d("SPREADSHEET_LOG", "UPDATING SHEET")
         return Observable.fromCallable {

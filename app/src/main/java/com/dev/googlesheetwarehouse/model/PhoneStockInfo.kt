@@ -2,11 +2,11 @@ package com.dev.googlesheetwarehouse.model
 
 class PhoneStockInfo(
     val phoneModel: String,
-    val countClear: String,
+    var countClear: String,
     val idClear: String,
-    val countMatt: String,
+    var countMatt: String,
     val idMatt: String,
-    val countTough: String,
+    var countTough: String,
     val idTough: String
 ) {
 }

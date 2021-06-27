@@ -19,12 +19,6 @@ interface SheetsDataSource {
         spreadsheetId: String,
         spreadsheetRange: String,
         requestBody: ValueRange
-    ): UpdateValuesResponse
-
-    fun updateSpreadsheetObservable(
-        spreadsheetId: String,
-        spreadsheetRange: String,
-        requestBody: ValueRange
     ): Observable<UpdateValuesResponse>
 
     fun updateSpreadsheetRange(

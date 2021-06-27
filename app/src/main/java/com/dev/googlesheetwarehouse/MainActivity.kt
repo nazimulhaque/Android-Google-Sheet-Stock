@@ -152,7 +152,6 @@ class MainActivity : AppCompatActivity() {
         // view.showName(authenticationManager.getLastSignedAccount()?.displayName!!)
         authenticationManager.setUpGoogleAccountCredential()
         startReadingSpreadsheet(spreadsheetId, range)
-        // startUpdatingSpreadsheetObservable(spreadSheetIdUpdate, rangeUpdate, valueRangeUpdate)
         // startUpdatingSpreadsheet(spreadSheetIdUpdate, rangeUpdate, valueRangeUpdate)
         // startUpdatingSpreadsheetRange(spreadSheetIdUpdate, batchUpdateRequest)
     }
@@ -222,19 +221,7 @@ class MainActivity : AppCompatActivity() {
         rangeUpdate: String,
         valueRangeUpdate: ValueRange
     ) {
-        sheetsRepository.updateSpreadsheet(
-            spreadSheetIdUpdate,
-            rangeUpdate,
-            valueRangeUpdate
-        )
-    }
-
-    private fun startUpdatingSpreadsheetObservable(
-        spreadSheetIdUpdate: String,
-        rangeUpdate: String,
-        valueRangeUpdate: ValueRange
-    ) {
-        updateSpreadsheetDisposable = sheetsRepository.updateSpreadsheetObservable(
+        updateSpreadsheetDisposable = sheetsRepository.updateSpreadsheet(
             spreadSheetIdUpdate,
             rangeUpdate,
             valueRangeUpdate

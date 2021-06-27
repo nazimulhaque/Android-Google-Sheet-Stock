@@ -20,23 +20,11 @@ class SheetsRepository(private val sheetsAPIDataSource: SheetsAPIDataSource) {
     }
 
     fun updateSpreadsheet(
-        spreadSheetIdUpdate: String,
-        rangeUpdate: String,
-        valueRangeUpdate: ValueRange
-    ): UpdateValuesResponse {
-        return sheetsAPIDataSource.updateSpreadsheet(
-            spreadSheetIdUpdate,
-            rangeUpdate,
-            valueRangeUpdate
-        )
-    }
-
-    fun updateSpreadsheetObservable(
         spreadsheetId: String,
         spreadsheetRange: String,
         requestBody: ValueRange
     ): Observable<UpdateValuesResponse> {
-        return sheetsAPIDataSource.updateSpreadsheetObservable(
+        return sheetsAPIDataSource.updateSpreadsheet(
             spreadsheetId,
             spreadsheetRange,
             requestBody
