@@ -69,7 +69,7 @@ class ScanningActivity : BaseScannerActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val actionBar = supportActionBar
-        actionBar?.setTitle(R.string.scan_items)
+        actionBar?.setTitle(R.string.scan_items_single)
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(false) // disable the button
             actionBar.setDisplayHomeAsUpEnabled(false) // remove the left caret

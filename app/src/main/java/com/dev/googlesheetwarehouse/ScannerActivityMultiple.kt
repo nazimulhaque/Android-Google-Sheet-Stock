@@ -10,7 +10,6 @@ import android.media.ToneGenerator
 import android.os.*
 import android.util.Log
 import android.view.Menu
-import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -18,9 +17,12 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.dev.googlesheetwarehouse.auth.AuthenticationManager
 import com.dev.googlesheetwarehouse.model.PhoneStockInfo
 import com.dev.googlesheetwarehouse.scan.BaseScannerActivity
+import com.dev.googlesheetwarehouse.scan.adapter.ScannedItemsAdapter
 import com.dev.googlesheetwarehouse.sheetsapi.SheetsAPIDataSource
 import com.dev.googlesheetwarehouse.sheetsapi.SheetsRepository
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -45,7 +47,7 @@ import me.dm7.barcodescanner.zxing.ZXingScannerView.ResultHandler
 import java.util.*
 
 
-class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
+class ScannerActivityMultiple : BaseScannerActivity(), ResultHandler {
     // Scanner
     private var mScannerView: ZXingScannerView? = null
     private var mFlash = false
@@ -53,11 +55,10 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
     // Views
     private lateinit var rlPleaseScanItems: RelativeLayout
     private lateinit var rlScannedItems: RelativeLayout
-    private lateinit var tvScannedItemName: TextView
     private lateinit var tvPleaseScanItems: TextView
+    private lateinit var recyclerView: RecyclerView
     private lateinit var btnMinus: Button
     private lateinit var btnPlus: Button
-    private lateinit var etCount: EditText
 
     // Authentication and Sheets API
     private lateinit var signInOptions: GoogleSignInOptions
@@ -73,6 +74,7 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
     private val phones: MutableList<PhoneStockInfo> = mutableListOf()
 
     private lateinit var scannedItemsList: ArrayList<String>
+    private lateinit var scannedItemsListAdapter: ScannedItemsAdapter
 
     private lateinit var batchUpdateRequest: BatchUpdateValuesRequest
 
@@ -80,7 +82,7 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
 
     public override fun onCreate(state: Bundle?) {
         super.onCreate(state)
-        setContentView(R.layout.activity_scanner_single)
+        setContentView(R.layout.activity_scanner_multiple)
         setupToolbar()
         initViews()
 
@@ -88,7 +90,7 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
 
         if (!hasCameraPermission())
             ActivityCompat.requestPermissions(
-                this@ScannerActivitySingle,
+                this@ScannerActivityMultiple,
                 arrayOf(Manifest.permission.CAMERA),
                 REQUEST_CODE_CAMERA
             )
@@ -96,11 +98,20 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
         val contentFrame = findViewById<View>(R.id.content_frame) as ViewGroup
         mScannerView = ZXingScannerView(this)
         contentFrame.addView(mScannerView)
+
+        // Create an empty list
+        scannedItemsList = ArrayList()
+        // Adding a layout manager
+        recyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
+        // Create adapter
+        scannedItemsListAdapter = ScannedItemsAdapter(scannedItemsList)
+        // Add adapter to recyclerview
+        recyclerView.adapter = scannedItemsListAdapter
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val actionBar = supportActionBar
-        actionBar?.setTitle(R.string.scan_items_single)
+        actionBar?.setTitle(R.string.scan_items_multiple)
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(false) // disable the button
             actionBar.setDisplayHomeAsUpEnabled(false) // remove the left caret
@@ -170,41 +181,22 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
 
     override fun handleResult(rawResult: Result) {
         rlPleaseScanItems.visibility = GONE
-        tvScannedItemName.text = rawResult.text
+        recyclerView.visibility = VISIBLE
         rlScannedItems.visibility = VISIBLE
 
-        // Display soft keyboard
-        Handler(Looper.getMainLooper()).postDelayed({
-            etCount.dispatchTouchEvent(
-                MotionEvent.obtain(
-                    SystemClock.uptimeMillis(),
-                    SystemClock.uptimeMillis(),
-                    MotionEvent.ACTION_DOWN,
-                    0f,
-                    0f,
-                    0
-                )
-            )
-            etCount.dispatchTouchEvent(
-                MotionEvent.obtain(
-                    SystemClock.uptimeMillis(),
-                    SystemClock.uptimeMillis(),
-                    MotionEvent.ACTION_UP,
-                    0f,
-                    0f,
-                    0
-                )
-            )
-        }, 200)
+        playBeepTone()
 
         scannedItem = rawResult.text
-
-        playBeepTone()
+        scannedItemsList.add(scannedItem)
+        scannedItemsListAdapter.notifyDataSetChanged()
+        Handler(Looper.getMainLooper()).postDelayed({
+            mScannerView!!.resumeCameraPreview(this)
+        }, 1000)
     }
 
     private fun setRangeAndValue(operator: String) {
         // Get range and value range for update
-        val count = etCount.text.toString().toInt()
+        val count = 1
         var i = 1
         phones.forEach { t ->
             // Log.d(TAG, t.phoneModel)
@@ -249,14 +241,13 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
     private fun initViews() {
         rlPleaseScanItems = findViewById(R.id.rl_please_scan_items)
         rlScannedItems = findViewById(R.id.rl_scanned_items)
-        tvScannedItemName = findViewById(R.id.tv_scanned_item_name)
         tvPleaseScanItems = findViewById(R.id.tv_please_scan_items)
         btnMinus = findViewById(R.id.btn_minus)
         btnPlus = findViewById(R.id.btn_plus)
-        etCount = findViewById(R.id.et_count)
+        recyclerView = findViewById(R.id.rv_scanned_items)
 
-        btnMinus.setOnClickListener { setRangeAndValue("-") }
-        btnPlus.setOnClickListener { setRangeAndValue("+") }
+        // btnMinus.setOnClickListener { setRangeAndValue("-") }
+        // btnPlus.setOnClickListener { setRangeAndValue("+") }
     }
 
     private fun initDependencies() {
@@ -269,7 +260,7 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
                 .build()
         googleSignInClient = GoogleSignIn.getClient(this, signInOptions)
         googleAccountCredential = GoogleAccountCredential
-            .usingOAuth2(this, Arrays.asList(*AuthenticationManager.SCOPES))
+            .usingOAuth2(this, listOf(*AuthenticationManager.SCOPES))
             .setBackOff(ExponentialBackOff())
         authenticationManager =
             AuthenticationManager(
@@ -319,7 +310,7 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
                     phones.addAll(it)
                     dataLoaded = true
                     mScannerView!!.startCamera()
-                    tvPleaseScanItems.text = "Please scan an item ..."
+                    tvPleaseScanItems.text = "Please scan items ..."
                 })
     }
 
@@ -339,7 +330,6 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
                 Log.d(TAG, "ERROR: " + it.message!!)
             }
             .subscribe(Consumer {
-                etCount.setText("1")
                 rlScannedItems.visibility = GONE
                 rlPleaseScanItems.visibility = VISIBLE
                 mScannerView!!.resumeCameraPreview(this)
@@ -351,7 +341,7 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
 
     private fun hasCameraPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            this@ScannerActivitySingle,
+            this@ScannerActivityMultiple,
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
 
@@ -384,7 +374,7 @@ class ScannerActivitySingle : BaseScannerActivity(), ResultHandler {
     }
 
     companion object {
-        private const val TAG = "SCANNER_ACTIVITY_SINGLE"
+        private const val TAG = "SCANNER_ACTIVITY_MULTI"
         private const val FLASH_STATE = "FLASH_STATE"
         private const val REQUEST_CODE_CAMERA = 1001
         const val REQUEST_CODE_GOOGLE_SIGN_IN = 999

@@ -15,7 +15,8 @@ class ScannedItemsAdapter(private val scannedItemsList: ArrayList<String>) :
         parent: ViewGroup,
         viewType: Int
     ): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.scanned_item, parent, false)
+        val v =
+            LayoutInflater.from(parent.context).inflate(R.layout.scanned_item_new, parent, false)
         return ViewHolder(v)
     }
 
@@ -29,14 +30,13 @@ class ScannedItemsAdapter(private val scannedItemsList: ArrayList<String>) :
         return scannedItemsList.size
     }
 
-    // The class is hodling the list view
+    // The class is holing the list view
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bindItems(slNo: Int, item: String) {
-            val tvSlNo = itemView.findViewById(R.id.tv_sl_no) as TextView
-            val tvScannedItem = itemView.findViewById(R.id.tv_scanned_item) as TextView
-            val serialNo = slNo + 1
-            tvSlNo.text = "$serialNo)"
-            tvScannedItem.text = item
+            val tvScannedItemName = itemView.findViewById(R.id.tv_scanned_item_name) as TextView
+            val etCount = itemView.findViewById(R.id.et_count) as TextView
+            tvScannedItemName.text = item
+            etCount.text = "1"
         }
     }
 }
