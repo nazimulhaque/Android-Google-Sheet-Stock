@@ -10,6 +10,7 @@ import android.media.ToneGenerator
 import android.os.*
 import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -21,10 +22,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dev.googlesheetwarehouse.auth.AuthenticationManager
 import com.dev.googlesheetwarehouse.model.PhoneStockInfo
-import com.dev.googlesheetwarehouse.scan.BaseScannerActivity
-import com.dev.googlesheetwarehouse.scan.adapter.ScannedItemsAdapter
-import com.dev.googlesheetwarehouse.sheetsapi.SheetsAPIDataSource
-import com.dev.googlesheetwarehouse.sheetsapi.SheetsRepository
+import com.dev.googlesheetwarehouse.adapter.ScannedItemsAdapter
+import com.dev.googlesheetwarehouse.api.SheetsAPIDataSource
+import com.dev.googlesheetwarehouse.api.SheetsRepository
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -47,7 +47,7 @@ import me.dm7.barcodescanner.zxing.ZXingScannerView.ResultHandler
 import java.util.*
 
 
-class ScannerActivityMultiple : BaseScannerActivity(), ResultHandler {
+class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
     // Scanner
     private var mScannerView: ZXingScannerView? = null
     private var mFlash = false
@@ -112,12 +112,23 @@ class ScannerActivityMultiple : BaseScannerActivity(), ResultHandler {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val actionBar = supportActionBar
         actionBar?.setTitle(R.string.scan_items_multiple)
-        if (actionBar != null) {
-            actionBar.setHomeButtonEnabled(false) // disable the button
-            actionBar.setDisplayHomeAsUpEnabled(false) // remove the left caret
-            actionBar.setDisplayShowHomeEnabled(false) // remove the icon
-        }
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        super.onPrepareOptionsMenu(menu)
+        menu.findItem(R.id.single).isVisible = true
+        menu.findItem(R.id.multiple).isVisible = false
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            (R.id.flash) -> {
+                toggleFlash()
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     public override fun onResume() {
@@ -347,7 +358,7 @@ class ScannerActivityMultiple : BaseScannerActivity(), ResultHandler {
 
     }
 
-    fun toggleFlash(v: View?) {
+    private fun toggleFlash() {
         mFlash = !mFlash
         mScannerView!!.flash = mFlash
     }

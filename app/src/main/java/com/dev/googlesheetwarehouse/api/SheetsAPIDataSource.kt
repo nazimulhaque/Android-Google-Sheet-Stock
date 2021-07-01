@@ -1,4 +1,4 @@
-package com.dev.googlesheetwarehouse.sheetsapi
+package com.dev.googlesheetwarehouse.api
 
 import android.util.Log
 import com.dev.googlesheetwarehouse.auth.AuthenticationManager

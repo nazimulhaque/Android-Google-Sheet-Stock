@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dev.googlesheetwarehouse.auth.AuthenticationManager
 import com.dev.googlesheetwarehouse.model.PhoneStockInfo
-import com.dev.googlesheetwarehouse.scan.adapter.ScannedItemsAdapter
-import com.dev.googlesheetwarehouse.sheetsapi.SheetsAPIDataSource
-import com.dev.googlesheetwarehouse.sheetsapi.SheetsRepository
+import com.dev.googlesheetwarehouse.adapter.ScannedItemsAdapter
+import com.dev.googlesheetwarehouse.api.SheetsAPIDataSource
+import com.dev.googlesheetwarehouse.api.SheetsRepository
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -255,9 +255,9 @@ class MainActivity : AppCompatActivity() {
             .subscribe(Consumer {
                 // view.showToast("UPDATED CELLS COUNT: " + it.totalUpdatedCells.toString())
                 Log.d("SPREADSHEET_LOG", it.totalUpdatedCells.toString())
-                val intent = Intent(this@MainActivity, ScanningActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
+                // val scanningIntent = Intent(this@MainActivity, ScanningActivity::class.java)
+                // scanningIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                // startActivity(scanningIntent)
                 this@MainActivity.finish()
             })
     }

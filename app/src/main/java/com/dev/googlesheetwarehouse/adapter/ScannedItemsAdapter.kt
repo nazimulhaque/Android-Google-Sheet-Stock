@@ -1,4 +1,4 @@
-package com.dev.googlesheetwarehouse.scan.adapter
+package com.dev.googlesheetwarehouse.adapter
 
 import android.view.LayoutInflater
 import android.view.View

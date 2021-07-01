@@ -1,4 +1,4 @@
-package com.dev.googlesheetwarehouse.sheetsapi
+package com.dev.googlesheetwarehouse.api
 
 import com.dev.googlesheetwarehouse.model.PhoneStockInfo
 import com.dev.googlesheetwarehouse.model.SpreadsheetInfo
