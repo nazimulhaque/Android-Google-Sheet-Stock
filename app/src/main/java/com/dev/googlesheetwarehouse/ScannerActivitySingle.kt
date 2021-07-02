@@ -15,10 +15,10 @@ import android.view.View.VISIBLE
 import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.dev.googlesheetwarehouse.auth.AuthenticationManager
-import com.dev.googlesheetwarehouse.model.PhoneStockInfo
 import com.dev.googlesheetwarehouse.api.SheetsAPIDataSource
 import com.dev.googlesheetwarehouse.api.SheetsRepository
+import com.dev.googlesheetwarehouse.auth.AuthenticationManager
+import com.dev.googlesheetwarehouse.model.PhoneStockInfo
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -255,7 +255,7 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
 
     private fun initViews() {
         rlPleaseScanItems = findViewById(R.id.rl_please_scan_items)
-        rlScannedItems = findViewById(R.id.rl_scanned_items)
+        rlScannedItems = findViewById(R.id.rl_buttons)
         tvScannedItemName = findViewById(R.id.tv_scanned_item_name)
         tvPleaseScanItems = findViewById(R.id.tv_please_scan_items)
         btnMinus = findViewById(R.id.btn_minus)
@@ -296,7 +296,7 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
 
     private fun launchAuthentication(client: GoogleSignInClient) {
         Log.d(TAG, "LOGIN PROMPT");
-        startActivityForResult(client.signInIntent, MainActivity.RQ_GOOGLE_SIGN_IN)
+        startActivityForResult(client.signInIntent, REQUEST_CODE_GOOGLE_SIGN_IN)
     }
 
     private fun loginSuccessful() {
@@ -304,9 +304,6 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
         // view.showName(authenticationManager.getLastSignedAccount()?.displayName!!)
         authenticationManager.setUpGoogleAccountCredential()
         startReadingSpreadsheet(spreadsheetId, rangeData)
-        // startUpdatingSpreadsheetObservable(spreadSheetIdUpdate, rangeUpdate, valueRangeUpdate)
-        // startUpdatingSpreadsheet(spreadSheetIdUpdate, rangeUpdate, valueRangeUpdate)
-        // startUpdatingSpreadsheetRange(spreadSheetIdUpdate, batchUpdateRequest)
     }
 
     private fun loginFailed() {
@@ -396,7 +393,10 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
         private const val REQUEST_CODE_CAMERA = 1001
         const val REQUEST_CODE_GOOGLE_SIGN_IN = 999
 
-        private const val spreadsheetId = "1QpABUgh5Qydc3TL5uGrh9Plueen7p4RdIx51X1A29wE"
+        // Test Sheet
+        // private const val spreadsheetId = "1QpABUgh5Qydc3TL5uGrh9Plueen7p4RdIx51X1A29wE"
+        // Main Sheet
+        private const val spreadsheetId = "1NvMlBT2f_lnnHNffBsLqYmhaDJJWbvmDR2LLw0OFOUU"
         private const val sheetName = "STOCK"
         private const val rangeData = "STOCK!A2:J"
 

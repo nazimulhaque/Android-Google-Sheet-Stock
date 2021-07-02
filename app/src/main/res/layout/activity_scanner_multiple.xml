@@ -67,7 +67,7 @@
             </androidx.recyclerview.widget.RecyclerView>
 
             <RelativeLayout
-                android:id="@+id/rl_scanned_items"
+                android:id="@+id/rl_buttons"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="0.07"

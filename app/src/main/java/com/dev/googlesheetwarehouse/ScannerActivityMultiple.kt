@@ -20,11 +20,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.dev.googlesheetwarehouse.auth.AuthenticationManager
-import com.dev.googlesheetwarehouse.model.PhoneStockInfo
 import com.dev.googlesheetwarehouse.adapter.ScannedItemsAdapter
 import com.dev.googlesheetwarehouse.api.SheetsAPIDataSource
 import com.dev.googlesheetwarehouse.api.SheetsRepository
+import com.dev.googlesheetwarehouse.auth.AuthenticationManager
+import com.dev.googlesheetwarehouse.model.PhoneStockInfo
+import com.dev.googlesheetwarehouse.model.RecyclerViewItem
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -54,7 +55,7 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
 
     // Views
     private lateinit var rlPleaseScanItems: RelativeLayout
-    private lateinit var rlScannedItems: RelativeLayout
+    private lateinit var rlButtons: RelativeLayout
     private lateinit var tvPleaseScanItems: TextView
     private lateinit var recyclerView: RecyclerView
     private lateinit var btnMinus: Button
@@ -71,9 +72,9 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
 
     private lateinit var readSpreadsheetDisposable: Disposable
     private lateinit var updateSpreadsheetDisposable: Disposable
-    private val phones: MutableList<PhoneStockInfo> = mutableListOf()
+    private val phoneModelsList: MutableList<PhoneStockInfo> = mutableListOf()
 
-    private lateinit var scannedItemsList: ArrayList<String>
+    private lateinit var scannedItemsList: ArrayList<RecyclerViewItem>
     private lateinit var scannedItemsListAdapter: ScannedItemsAdapter
 
     private lateinit var batchUpdateRequest: BatchUpdateValuesRequest
@@ -193,72 +194,103 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
     override fun handleResult(rawResult: Result) {
         rlPleaseScanItems.visibility = GONE
         recyclerView.visibility = VISIBLE
-        rlScannedItems.visibility = VISIBLE
+        rlButtons.visibility = VISIBLE
 
-        playBeepTone()
+        var check = false
+        scannedItemsList.forEach { t ->
+            if (t.scannedItem == rawResult.text) {
+                check = true
+            }
+        }
 
-        scannedItem = rawResult.text
-        scannedItemsList.add(scannedItem)
-        scannedItemsListAdapter.notifyDataSetChanged()
+        if (check) {
+            Toast.makeText(this, "Duplicate item!", Toast.LENGTH_SHORT).show()
+        } else {
+            playBeepTone()
+            scannedItemsListAdapter.companion.scannedItemsCountList.add(
+                RecyclerViewItem(
+                    rawResult.text,
+                    "1"
+                )
+            )
+            scannedItemsList.add(
+                RecyclerViewItem(
+                    rawResult.text,
+                    "1"
+                )
+            )
+            scannedItemsListAdapter.notifyDataSetChanged()
+        }
         Handler(Looper.getMainLooper()).postDelayed({
             mScannerView!!.resumeCameraPreview(this)
         }, 1000)
     }
 
     private fun setRangeAndValue(operator: String) {
+        mScannerView!!.stopCameraPreview()
         // Get range and value range for update
-        val count = 1
-        var i = 1
-        phones.forEach { t ->
-            // Log.d(TAG, t.phoneModel)
-            i++
-            when (scannedItem) {
-                (t.idClear) -> {
-                    // Update list item first
-                    t.countClear =
-                        if (operator == "+") (t.countClear.toInt() + count).toString() else (t.countClear.toInt() - count).toString()
-                    rangeUpdate = "'${sheetName}'!B$i"
-                    valueRangeUpdate = ValueRange().setValues(
-                        listOf(
-                            listOf<Any>(t.countClear)
+        val body = mutableListOf<ValueRange>()
+        for (item in scannedItemsListAdapter.companion.scannedItemsCountList) {
+            var count = item.count.toIntOrNull()
+            if (count == null) count = 0
+            var i = 1
+            phoneModelsList.forEach { t ->
+                // Log.d(TAG, t.phoneModel)
+                i++
+                when (item.scannedItem) {
+                    (t.idClear) -> {
+                        // Update list item first
+                        t.countClear =
+                            if (operator == "+") (t.countClear.toInt() + count).toString() else (t.countClear.toInt() - count).toString()
+                        rangeUpdate = "'${sheetName}'!B$i"
+                        valueRangeUpdate = ValueRange().setRange(rangeUpdate).setValues(
+                            listOf(
+                                listOf<Any>(t.countClear)
+                            )
                         )
-                    )
-                }
-                t.idMatt -> {
-                    t.countMatt =
-                        if (operator == "+") (t.countMatt.toInt() + count).toString() else (t.countMatt.toInt() - count).toString()
-                    rangeUpdate = "'${sheetName}'!E$i"
-                    valueRangeUpdate = ValueRange().setValues(
-                        listOf(
-                            listOf<Any>(t.countMatt)
+                        body.add(valueRangeUpdate)
+                    }
+                    t.idMatt -> {
+                        t.countMatt =
+                            if (operator == "+") (t.countMatt.toInt() + count).toString() else (t.countMatt.toInt() - count).toString()
+                        rangeUpdate = "'${sheetName}'!E$i"
+                        valueRangeUpdate = ValueRange().setRange(rangeUpdate).setValues(
+                            listOf(
+                                listOf<Any>(t.countMatt)
+                            )
                         )
-                    )
-                }
-                t.idTough -> {
-                    t.countTough =
-                        if (operator == "+") (t.countTough.toInt() + count).toString() else (t.countTough.toInt() - count).toString()
-                    rangeUpdate = "'${sheetName}'!H$i"
-                    valueRangeUpdate = ValueRange().setValues(
-                        listOf(
-                            listOf<Any>(t.countTough)
+                        body.add(valueRangeUpdate)
+                    }
+                    t.idTough -> {
+                        t.countTough =
+                            if (operator == "+") (t.countTough.toInt() + count).toString() else (t.countTough.toInt() - count).toString()
+                        rangeUpdate = "'${sheetName}'!H$i"
+                        valueRangeUpdate = ValueRange().setRange(rangeUpdate).setValues(
+                            listOf(
+                                listOf<Any>(t.countTough)
+                            )
                         )
-                    )
+                        body.add(valueRangeUpdate)
+                    }
                 }
             }
         }
-        startUpdatingSpreadsheet(spreadsheetId, rangeUpdate, valueRangeUpdate)
+        batchUpdateRequest = BatchUpdateValuesRequest()
+            .setValueInputOption("RAW")
+            .setData(body)
+        startUpdatingSpreadsheetRange(spreadsheetId, batchUpdateRequest)
     }
 
     private fun initViews() {
         rlPleaseScanItems = findViewById(R.id.rl_please_scan_items)
-        rlScannedItems = findViewById(R.id.rl_scanned_items)
+        rlButtons = findViewById(R.id.rl_buttons)
         tvPleaseScanItems = findViewById(R.id.tv_please_scan_items)
         btnMinus = findViewById(R.id.btn_minus)
         btnPlus = findViewById(R.id.btn_plus)
         recyclerView = findViewById(R.id.rv_scanned_items)
 
-        // btnMinus.setOnClickListener { setRangeAndValue("-") }
-        // btnPlus.setOnClickListener { setRangeAndValue("+") }
+        btnMinus.setOnClickListener { setRangeAndValue("-") }
+        btnPlus.setOnClickListener { setRangeAndValue("+") }
     }
 
     private fun initDependencies() {
@@ -291,7 +323,7 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
 
     private fun launchAuthentication(client: GoogleSignInClient) {
         Log.d(TAG, "LOGIN PROMPT");
-        startActivityForResult(client.signInIntent, MainActivity.RQ_GOOGLE_SIGN_IN)
+        startActivityForResult(client.signInIntent, REQUEST_CODE_GOOGLE_SIGN_IN)
     }
 
     private fun loginSuccessful() {
@@ -299,9 +331,6 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
         // view.showName(authenticationManager.getLastSignedAccount()?.displayName!!)
         authenticationManager.setUpGoogleAccountCredential()
         startReadingSpreadsheet(spreadsheetId, rangeData)
-        // startUpdatingSpreadsheetObservable(spreadSheetIdUpdate, rangeUpdate, valueRangeUpdate)
-        // startUpdatingSpreadsheet(spreadSheetIdUpdate, rangeUpdate, valueRangeUpdate)
-        // startUpdatingSpreadsheetRange(spreadSheetIdUpdate, batchUpdateRequest)
     }
 
     private fun loginFailed() {
@@ -309,7 +338,7 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
     }
 
     private fun startReadingSpreadsheet(spreadsheetId: String, range: String) {
-        phones.clear()
+        phoneModelsList.clear()
         readSpreadsheetDisposable =
             sheetsRepository.readSpreadSheet(spreadsheetId, range)
                 .subscribeOn(Schedulers.computation())
@@ -318,34 +347,46 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
                     Toast.makeText(this, it.message!!, Toast.LENGTH_SHORT).show()
                 }
                 .subscribe(Consumer {
-                    phones.addAll(it)
+                    phoneModelsList.addAll(it)
                     dataLoaded = true
                     mScannerView!!.startCamera()
                     tvPleaseScanItems.text = "Please scan items ..."
                 })
     }
 
-    private fun startUpdatingSpreadsheet(
+    private fun startUpdatingSpreadsheetRange(
         spreadSheetIdUpdate: String,
-        rangeUpdate: String,
-        valueRangeUpdate: ValueRange
+        batchUpdateRequest: BatchUpdateValuesRequest
     ) {
-        updateSpreadsheetDisposable = sheetsRepository.updateSpreadsheet(
+        updateSpreadsheetDisposable = sheetsRepository.updateSpreadsheetRange(
             spreadSheetIdUpdate,
-            rangeUpdate,
-            valueRangeUpdate
+            batchUpdateRequest
         )
             .subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnError {
-                Log.d(TAG, "ERROR: " + it.message!!)
+                Log.d(TAG, it.message!!)
             }
             .subscribe(Consumer {
-                rlScannedItems.visibility = GONE
+                Log.d(TAG, "UPDATED CELLS COUNT: " + it.totalUpdatedCells.toString())
+                scannedItemsListAdapter.companion.scannedItemsCountList.clear()
+                scannedItemsList.clear()
+                scannedItemsListAdapter.notifyDataSetChanged()
+                recyclerView.visibility = GONE
+                rlButtons.visibility = GONE
                 rlPleaseScanItems.visibility = VISIBLE
-                mScannerView!!.resumeCameraPreview(this)
 
-                Log.d(TAG, "UPDATED CELLS: " + it.updatedCells.toString())
+                Handler(Looper.getMainLooper()).postDelayed({
+                    mScannerView!!.resumeCameraPreview(this)
+                }, 1000)
+
+                phoneModelsList.forEach { t ->
+                    Log.d(
+                        TAG,
+                        "countClear=${t.countClear},countClear=${t.countMatt},countClear=${t.countTough}"
+                    )
+                }
+
                 Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show()
             })
     }
@@ -390,7 +431,10 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
         private const val REQUEST_CODE_CAMERA = 1001
         const val REQUEST_CODE_GOOGLE_SIGN_IN = 999
 
-        private const val spreadsheetId = "1QpABUgh5Qydc3TL5uGrh9Plueen7p4RdIx51X1A29wE"
+        // Test Sheet
+        // private const val spreadsheetId = "1QpABUgh5Qydc3TL5uGrh9Plueen7p4RdIx51X1A29wE"
+        // Main Sheet
+        private const val spreadsheetId = "1NvMlBT2f_lnnHNffBsLqYmhaDJJWbvmDR2LLw0OFOUU"
         private const val sheetName = "STOCK"
         private const val rangeData = "STOCK!A2:J"
 

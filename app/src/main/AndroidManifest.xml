@@ -22,11 +22,6 @@
         android:theme="@style/Theme.GoogleSheetWarehouse">
 
         <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait" />
-
-        <activity
             android:name=".ScannerActivitySingle"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
