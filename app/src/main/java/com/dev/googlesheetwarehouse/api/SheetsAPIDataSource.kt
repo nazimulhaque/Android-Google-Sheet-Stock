@@ -41,14 +41,15 @@ class SheetsAPIDataSource(
             }
             .flatMapIterable { it -> it }
             .map {
+                Log.d(TAG, it[0].toString())
                 PhoneStockInfo(
-                    it[0].toString(),
-                    it[1].toString(),
-                    it[2].toString(),
-                    it[4].toString(),
-                    it[5].toString(),
-                    it[7].toString(),
-                    it[8].toString()
+                    if (it.size > 0) it[0].toString() else "",
+                    if (it.size > 1) it[1].toString() else "",
+                    if (it.size > 2) it[2].toString() else "",
+                    if (it.size > 4) it[4].toString() else "",
+                    if (it.size > 5) it[5].toString() else "",
+                    if (it.size > 7) it[7].toString() else "",
+                    if (it.size > 8) it[8].toString() else "",
                 )
             }
             .toList()
@@ -105,6 +106,7 @@ class SheetsAPIDataSource(
     }
 
     companion object {
+        private const val TAG = "SHEETS_API_DATA_SOURCE"
         val KEY_ID = "spreadsheetId"
         val KEY_URL = "spreadsheetUrl"
     }

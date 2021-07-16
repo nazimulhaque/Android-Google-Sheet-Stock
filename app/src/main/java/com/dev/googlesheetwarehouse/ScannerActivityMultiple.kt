@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.media.ToneGenerator
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.*
 import android.util.Log
 import android.view.Menu
@@ -88,6 +90,14 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
         initViews()
 
         initDependencies()
+
+        if (!isOnline(this)) {
+            Toast.makeText(
+                this,
+                "NO INTERNET!!\nOpen app after connecting to Internet.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
 
         if (!hasCameraPermission())
             ActivityCompat.requestPermissions(
@@ -192,38 +202,45 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
     }
 
     override fun handleResult(rawResult: Result) {
-        rlPleaseScanItems.visibility = GONE
-        recyclerView.visibility = VISIBLE
-        rlButtons.visibility = VISIBLE
+        if (rawResult.text.length > 5) {
+            rlPleaseScanItems.visibility = GONE
+            recyclerView.visibility = VISIBLE
+            rlButtons.visibility = VISIBLE
 
-        var check = false
-        scannedItemsList.forEach { t ->
-            if (t.scannedItem == rawResult.text) {
-                check = true
+            var check = false
+            scannedItemsList.forEach { t ->
+                if (t.scannedItem == rawResult.text) {
+                    check = true
+                }
             }
-        }
 
-        if (check) {
-            Toast.makeText(this, "Duplicate item!", Toast.LENGTH_SHORT).show()
+            if (check) {
+                Toast.makeText(this, "Duplicate item!", Toast.LENGTH_SHORT).show()
+            } else {
+                playBeepTone()
+                scannedItemsListAdapter.companion.scannedItemsCountList.add(
+                    RecyclerViewItem(
+                        rawResult.text,
+                        "1"
+                    )
+                )
+                scannedItemsList.add(
+                    RecyclerViewItem(
+                        rawResult.text,
+                        "1"
+                    )
+                )
+                scannedItemsListAdapter.notifyDataSetChanged()
+            }
+            Handler(Looper.getMainLooper()).postDelayed({
+                mScannerView!!.resumeCameraPreview(this)
+            }, 1000)
         } else {
-            playBeepTone()
-            scannedItemsListAdapter.companion.scannedItemsCountList.add(
-                RecyclerViewItem(
-                    rawResult.text,
-                    "1"
-                )
-            )
-            scannedItemsList.add(
-                RecyclerViewItem(
-                    rawResult.text,
-                    "1"
-                )
-            )
-            scannedItemsListAdapter.notifyDataSetChanged()
+            Toast.makeText(this, "Scanned item QR code too short!", Toast.LENGTH_SHORT).show()
+            Handler(Looper.getMainLooper()).postDelayed({
+                mScannerView!!.resumeCameraPreview(this)
+            }, 1000)
         }
-        Handler(Looper.getMainLooper()).postDelayed({
-            mScannerView!!.resumeCameraPreview(this)
-        }, 1000)
     }
 
     private fun setRangeAndValue(operator: String) {
@@ -238,10 +255,12 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
                 // Log.d(TAG, t.phoneModel)
                 i++
                 when (item.scannedItem) {
+                    // Update list item first
                     (t.idClear) -> {
-                        // Update list item first
+                        var clear = t.countClear.toIntOrNull()
+                        if (clear == null) clear = 0
                         t.countClear =
-                            if (operator == "+") (t.countClear.toInt() + count).toString() else (t.countClear.toInt() - count).toString()
+                            if (operator == "+") (clear + count).toString() else (clear - count).toString()
                         rangeUpdate = "'${sheetName}'!B$i"
                         valueRangeUpdate = ValueRange().setRange(rangeUpdate).setValues(
                             listOf(
@@ -251,8 +270,10 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
                         body.add(valueRangeUpdate)
                     }
                     t.idMatt -> {
+                        var matt = t.countMatt.toIntOrNull()
+                        if (matt == null) matt = 0
                         t.countMatt =
-                            if (operator == "+") (t.countMatt.toInt() + count).toString() else (t.countMatt.toInt() - count).toString()
+                            if (operator == "+") (matt + count).toString() else (matt - count).toString()
                         rangeUpdate = "'${sheetName}'!E$i"
                         valueRangeUpdate = ValueRange().setRange(rangeUpdate).setValues(
                             listOf(
@@ -262,8 +283,10 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
                         body.add(valueRangeUpdate)
                     }
                     t.idTough -> {
+                        var tough = t.countTough.toIntOrNull()
+                        if (tough == null) tough = 0
                         t.countTough =
-                            if (operator == "+") (t.countTough.toInt() + count).toString() else (t.countTough.toInt() - count).toString()
+                            if (operator == "+") (tough + count).toString() else (tough - count).toString()
                         rangeUpdate = "'${sheetName}'!H$i"
                         valueRangeUpdate = ValueRange().setRange(rangeUpdate).setValues(
                             listOf(
@@ -425,6 +448,30 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
         }
     }
 
+    private fun isOnline(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val capabilities =
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+        if (capabilities != null) {
+            when {
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
     companion object {
         private const val TAG = "SCANNER_ACTIVITY_MULTI"
         private const val FLASH_STATE = "FLASH_STATE"
@@ -433,6 +480,7 @@ class ScannerActivityMultiple : ScannerActivityBase(), ResultHandler {
 
         // Test Sheet
         // private const val spreadsheetId = "1QpABUgh5Qydc3TL5uGrh9Plueen7p4RdIx51X1A29wE"
+
         // Main Sheet
         private const val spreadsheetId = "1NvMlBT2f_lnnHNffBsLqYmhaDJJWbvmDR2LLw0OFOUU"
         private const val sheetName = "STOCK"

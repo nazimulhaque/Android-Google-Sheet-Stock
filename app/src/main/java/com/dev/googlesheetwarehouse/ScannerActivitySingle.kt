@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.media.ToneGenerator
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.*
 import android.util.Log
 import android.view.*
@@ -81,6 +83,14 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
         initViews()
 
         initDependencies()
+
+        if (!isOnline(this)) {
+            Toast.makeText(
+                this,
+                "NO INTERNET!!\nOpen app after connecting to Internet.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
 
         if (!hasCameraPermission())
             ActivityCompat.requestPermissions(
@@ -176,42 +186,50 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
     }
 
     override fun handleResult(rawResult: Result) {
-        rlPleaseScanItems.visibility = GONE
-        tvScannedItemName.text = rawResult.text
-        rlScannedItems.visibility = VISIBLE
+        if (rawResult.text.length > 5) {
+            rlPleaseScanItems.visibility = GONE
+            tvScannedItemName.text = rawResult.text
+            rlScannedItems.visibility = VISIBLE
 
-        // Display soft keyboard
-        Handler(Looper.getMainLooper()).postDelayed({
-            etCount.dispatchTouchEvent(
-                MotionEvent.obtain(
-                    SystemClock.uptimeMillis(),
-                    SystemClock.uptimeMillis(),
-                    MotionEvent.ACTION_DOWN,
-                    0f,
-                    0f,
-                    0
+            // Display soft keyboard
+            Handler(Looper.getMainLooper()).postDelayed({
+                etCount.dispatchTouchEvent(
+                    MotionEvent.obtain(
+                        SystemClock.uptimeMillis(),
+                        SystemClock.uptimeMillis(),
+                        MotionEvent.ACTION_DOWN,
+                        0f,
+                        0f,
+                        0
+                    )
                 )
-            )
-            etCount.dispatchTouchEvent(
-                MotionEvent.obtain(
-                    SystemClock.uptimeMillis(),
-                    SystemClock.uptimeMillis(),
-                    MotionEvent.ACTION_UP,
-                    0f,
-                    0f,
-                    0
+                etCount.dispatchTouchEvent(
+                    MotionEvent.obtain(
+                        SystemClock.uptimeMillis(),
+                        SystemClock.uptimeMillis(),
+                        MotionEvent.ACTION_UP,
+                        0f,
+                        0f,
+                        0
+                    )
                 )
-            )
-        }, 200)
+            }, 200)
 
-        scannedItem = rawResult.text
+            scannedItem = rawResult.text
 
-        playBeepTone()
+            playBeepTone()
+        } else {
+            Toast.makeText(this, "Scanned item QR code too short!", Toast.LENGTH_SHORT).show()
+            Handler(Looper.getMainLooper()).postDelayed({
+                mScannerView!!.resumeCameraPreview(this)
+            }, 1000)
+        }
     }
 
     private fun setRangeAndValue(operator: String) {
         // Get range and value range for update
-        val count = etCount.text.toString().toInt()
+        var count = etCount.text.toString().toIntOrNull()
+        if (count == null) count = 0
         var i = 1
         phones.forEach { t ->
             // Log.d(TAG, t.phoneModel)
@@ -219,8 +237,10 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
             when (scannedItem) {
                 (t.idClear) -> {
                     // Update list item first
+                    var clear = t.countClear.toIntOrNull()
+                    if (clear == null) clear = 0
                     t.countClear =
-                        if (operator == "+") (t.countClear.toInt() + count).toString() else (t.countClear.toInt() - count).toString()
+                        if (operator == "+") (clear + count).toString() else (clear - count).toString()
                     rangeUpdate = "'${sheetName}'!B$i"
                     valueRangeUpdate = ValueRange().setValues(
                         listOf(
@@ -229,8 +249,10 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
                     )
                 }
                 t.idMatt -> {
+                    var matt = t.countMatt.toIntOrNull()
+                    if (matt == null) matt = 0
                     t.countMatt =
-                        if (operator == "+") (t.countMatt.toInt() + count).toString() else (t.countMatt.toInt() - count).toString()
+                        if (operator == "+") (matt + count).toString() else (matt - count).toString()
                     rangeUpdate = "'${sheetName}'!E$i"
                     valueRangeUpdate = ValueRange().setValues(
                         listOf(
@@ -239,8 +261,10 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
                     )
                 }
                 t.idTough -> {
+                    var tough = t.countTough.toIntOrNull()
+                    if (tough == null) tough = 0
                     t.countTough =
-                        if (operator == "+") (t.countTough.toInt() + count).toString() else (t.countTough.toInt() - count).toString()
+                        if (operator == "+") (tough + count).toString() else (tough - count).toString()
                     rangeUpdate = "'${sheetName}'!H$i"
                     valueRangeUpdate = ValueRange().setValues(
                         listOf(
@@ -387,6 +411,30 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
         }
     }
 
+    private fun isOnline(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val capabilities =
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+        if (capabilities != null) {
+            when {
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
     companion object {
         private const val TAG = "SCANNER_ACTIVITY_SINGLE"
         private const val FLASH_STATE = "FLASH_STATE"
@@ -395,6 +443,7 @@ class ScannerActivitySingle : ScannerActivityBase(), ResultHandler {
 
         // Test Sheet
         // private const val spreadsheetId = "1QpABUgh5Qydc3TL5uGrh9Plueen7p4RdIx51X1A29wE"
+
         // Main Sheet
         private const val spreadsheetId = "1NvMlBT2f_lnnHNffBsLqYmhaDJJWbvmDR2LLw0OFOUU"
         private const val sheetName = "STOCK"
