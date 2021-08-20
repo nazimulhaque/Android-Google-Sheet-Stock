@@ -41,7 +41,7 @@ class SheetsAPIDataSource(
             }
             .flatMapIterable { it -> it }
             .map {
-                Log.d(TAG, it[0].toString())
+                if (it.size > 0) Log.d(TAG, it[0].toString())
                 PhoneStockInfo(
                     if (it.size > 0) it[0].toString() else "",
                     if (it.size > 1) it[1].toString() else "",
